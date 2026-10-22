@@ -1,138 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GUESS_THE_NUMBER.EXE</title>
+
+<title>Ocean Number Game</title>
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    background:black;
-    color:white;
-    font-family:monospace;
-    overflow:hidden;
+margin:0;
+font-family:Arial,sans-serif;
+color:white;
+text-align:center;
+
+background:url("dynamic-anime-waves-stockcake.jpg");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+
+min-height:100vh;
 }
 
-canvas{
-    position:fixed;
-    top:0;
-    left:0;
-    z-index:-1;
+.overlay{
+background:rgba(0,0,0,0.55);
+min-height:100vh;
+padding:30px;
 }
 
-.container{
-    text-align:center;
-    max-width:700px;
-    margin:auto;
-    padding-top:80px;
+h1{
+font-size:50px;
+text-shadow:0 0 15px cyan;
+animation:float 3s infinite ease-in-out;
 }
 
-.glitch{
-    font-size:3rem;
-    font-weight:bold;
-    position:relative;
-    animation:glitch 0.8s infinite;
+@keyframes float{
+50%{
+transform:translateY(-8px);
+}
 }
 
-@keyframes glitch{
-    0%{
-        text-shadow:3px 0 white;
-    }
-    25%{
-        text-shadow:-3px 0 gray;
-    }
-    50%{
-        text-shadow:3px 0 white;
-    }
-    75%{
-        text-shadow:-3px 0 gray;
-    }
-    100%{
-        text-shadow:3px 0 white;
-    }
+.box{
+max-width:700px;
+margin:auto;
+padding:20px;
+
+background:rgba(0,0,0,0.6);
+border:2px solid white;
+border-radius:15px;
+
+backdrop-filter:blur(5px);
 }
 
-.panel{
-    border:2px solid white;
-    padding:20px;
-    margin-top:30px;
-    backdrop-filter:blur(3px);
-}
+input,select,button{
 
-select, input, button{
-    background:black;
-    color:white;
-    border:1px solid white;
-    padding:10px;
-    margin:10px;
-    font-family:monospace;
+padding:10px;
+margin:8px;
+font-size:18px;
+
+border:none;
+border-radius:8px;
+
 }
 
 button{
-    cursor:pointer;
-    transition:0.2s;
+cursor:pointer;
+background:white;
 }
 
 button:hover{
-    background:white;
-    color:black;
+background:cyan;
 }
 
 #message{
-    margin-top:20px;
-    min-height:50px;
+margin-top:20px;
+font-size:22px;
+font-weight:bold;
 }
 
-#leaderboard{
-    margin-top:20px;
-    border-top:1px solid white;
-    padding-top:15px;
+#board{
+margin-top:20px;
+text-align:left;
+}
+
+.record{
+color:gold;
 }
 
 </style>
 </head>
 <body>
 
-<canvas id="snow"></canvas>
+<div class="overlay">
 
-<div class="container">
+<h1>🌊 Guess The Number 🌊</h1>
 
-<h1 class="glitch">GUESS_THE_NUMBER.EXE</h1>
+<div class="box">
 
-<div class="panel">
-
-<h3>Select Difficulty</h3>
-
-<select id="level">
-    <option value="0">Level 1 (1-10)</option>
-    <option value="1">Level 2 (1-20)</option>
-    <option value="2">Level 3 (1-50)</option>
-    <option value="3">Level 4 (1-100)</option>
-    <option value="4">Level 5 (1-200)</option>
-    <option value="5">Level 6 (1-500)</option>
-    <option value="6">Level 7 (1-1000)</option>
-</select>
-
-<button onclick="startGame()">START</button>
+<input id="nickname"
+placeholder="Steam Nickname">
 
 <br>
 
-<input id="guessInput" type="number" placeholder="Guess number">
+<select id="level">
 
-<button onclick="checkGuess()">GUESS</button>
+<option value="0">Level 1 (1-10)</option>
+<option value="1">Level 2 (1-20)</option>
+<option value="2">Level 3 (1-50)</option>
+<option value="3">Level 4 (1-100)</option>
+<option value="4">Level 5 (1-200)</option>
+<option value="5">Level 6 (1-500)</option>
+<option value="6">Level 7 (1-1000)</option>
+
+</select>
+
+<br>
+
+<button onclick="startGame()">Start Game</button>
+
+<br>
+
+<input
+id="guess"
+type="number"
+placeholder="Enter number">
+
+<button onclick="guessNumber()">
+Guess
+</button>
 
 <div id="message"></div>
 
-<div id="leaderboard">
-<h3>Leaderboard</h3>
-<div id="scores"></div>
+<h2 class="record">
+Best Score:
+<span id="bestscore">
+No Record
+</span>
+</h2>
+
+<div id="board">
+
+<h2>Leaderboard</h2>
+
+<div id="leaderboard"></div>
+
 </div>
 
 </div>
@@ -147,138 +158,188 @@ let attemptsList=[5,5,5,10,20,50,100];
 let secretNumber;
 let attempts;
 let maxAttempts;
-let leaderboard=[];
+
+let leaderboard=
+JSON.parse(
+localStorage.getItem("leaderboard")
+)||[];
+
+let bestScore=
+localStorage.getItem("bestscore");
+
+showBest();
+showBoard();
+
+function showBest(){
+
+document.getElementById("bestscore")
+.innerText=
+bestScore || "No Record";
+
+}
 
 function startGame(){
 
-let choice=document.getElementById("level").value;
+let level=
+document.getElementById("level").value;
 
 secretNumber=
-Math.floor(Math.random()*levels[choice])+1;
+Math.floor(
+Math.random()*levels[level]
+)+1;
 
 attempts=1;
-maxAttempts=attemptsList[choice];
 
-document.getElementById("message").innerHTML=
-"GAME STARTED";
+maxAttempts=
+attemptsList[level];
+
+document.getElementById("message")
+.innerText=
+"Game Started";
+
 }
 
-function checkGuess(){
+function guessNumber(){
+
+if(secretNumber===undefined){
+
+alert("Start game first!");
+
+return;
+
+}
 
 let guess=
-Number(document.getElementById("guessInput").value);
-
-if(!secretNumber){
-    return;
-}
+Number(
+document.getElementById("guess").value
+);
 
 if(guess===secretNumber){
 
-document.getElementById("message").innerHTML=
-"YOU WIN IN "+attempts+" ATTEMPTS";
+let name=
+document.getElementById("nickname")
+.value || "Unknown";
 
-leaderboard.push(
-"✅ WIN | Attempts: "+attempts
+document.getElementById("message")
+.innerText=
+"🎉 You Win! Attempts: "
++attempts;
+
+if(
+!bestScore ||
+attempts<bestScore
+){
+
+bestScore=attempts;
+
+localStorage.setItem(
+"bestscore",
+bestScore
 );
 
-updateBoard();
+showBest();
 
-secretNumber=null;
+}
+
+leaderboard.push({
+
+name:name,
+attempts:attempts,
+status:"Won"
+
+});
+
+saveBoard();
+
+secretNumber=undefined;
+
 return;
+
 }
 
 if(attempts>=maxAttempts){
 
-document.getElementById("message").innerHTML=
-"GAME OVER | Number was "+secretNumber;
+let name=
+document.getElementById("nickname")
+.value || "Unknown";
 
-leaderboard.push(
-"❌ LOST | Attempts: "+attempts
-);
+document.getElementById("message")
+.innerText=
+"💀 Game Over!";
 
-updateBoard();
+leaderboard.push({
 
-secretNumber=null;
+name:name,
+attempts:attempts,
+status:"Lost"
+
+});
+
+saveBoard();
+
+secretNumber=undefined;
+
 return;
+
 }
 
 if(guess<secretNumber){
-    document.getElementById("message").innerHTML=
-    "TOO LOW";
-}
-else{
-    document.getElementById("message").innerHTML=
-    "TOO HIGH";
+
+document.getElementById("message")
+.innerText=
+"Too low";
+
+}else{
+
+document.getElementById("message")
+.innerText=
+"Too high";
+
 }
 
 attempts++;
 
 }
 
-function updateBoard(){
+function saveBoard(){
 
-let board=
-document.getElementById("scores");
+localStorage.setItem(
+"leaderboard",
+JSON.stringify(
+leaderboard
+)
+);
 
-board.innerHTML="";
+showBoard();
 
-leaderboard.forEach(x=>{
+}
 
-let p=document.createElement("p");
+function showBoard(){
 
-p.textContent=x;
+let box=
+document.getElementById(
+"leaderboard"
+);
 
-board.appendChild(p);
+box.innerHTML="";
+
+leaderboard.forEach(player=>{
+
+box.innerHTML+=`
+
+<p>
+👤 ${player.name}
+|
+${player.status}
+|
+${player.attempts} attempts
+</p>
+
+`;
 
 });
 
 }
-
-const canvas=document.getElementById("snow");
-const ctx=canvas.getContext("2d");
-
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-let particles=[];
-
-for(let i=0;i<100;i++){
-
-particles.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-r:Math.random()*3+1,
-s:Math.random()*2+0.5
-});
-
-}
-
-function animate(){
-
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-ctx.fillStyle="white";
-
-particles.forEach(p=>{
-
-ctx.beginPath();
-ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-ctx.fill();
-
-p.y+=p.s;
-
-if(p.y>canvas.height){
-p.y=0;
-p.x=Math.random()*canvas.width;
-}
-
-});
-
-requestAnimationFrame(animate);
-
-}
-
-animate();
 
 </script>
 
