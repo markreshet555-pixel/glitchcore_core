@@ -1,1 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GUESS_THE_NUMBER.EXE</title>
 
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:black;
+    color:white;
+    font-family:monospace;
+    overflow:hidden;
+}
+
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+
+.container{
+    text-align:center;
+    max-width:700px;
+    margin:auto;
+    padding-top:80px;
+}
+
+.glitch{
+    font-size:3rem;
+    font-weight:bold;
+    position:relative;
+    animation:glitch 0.8s infinite;
+}
+
+@keyframes glitch{
+    0%{
+        text-shadow:3px 0 white;
+    }
+    25%{
+        text-shadow:-3px 0 gray;
+    }
+    50%{
+        text-shadow:3px 0 white;
+    }
+    75%{
+        text-shadow:-3px 0 gray;
+    }
+    100%{
+        text-shadow:3px 0 white;
+    }
+}
+
+.panel{
+    border:2px solid white;
+    padding:20px;
+    margin-top:30px;
+    backdrop-filter:blur(3px);
+}
+
+select, input, button{
+    background:black;
+    color:white;
+    border:1px solid white;
+    padding:10px;
+    margin:10px;
+    font-family:monospace;
+}
+
+button{
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    background:white;
+    color:black;
+}
+
+#message{
+    margin-top:20px;
+    min-height:50px;
+}
+
+#leaderboard{
+    margin-top:20px;
+    border-top:1px solid white;
+    padding-top:15px;
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="snow"></canvas>
+
+<div class="container">
+
+<h1 class="glitch">GUESS_THE_NUMBER.EXE</h1>
+
+<div class="panel">
+
+<h3>Select Difficulty</h3>
+
+<select id="level">
+    <option value="0">Level 1 (1-10)</option>
+    <option value="1">Level 2 (1-20)</option>
+    <option value="2">Level 3 (1-50)</option>
+    <option value="3">Level 4 (1-100)</option>
+    <option value="4">Level 5 (1-200)</option>
+    <option value="5">Level 6 (1-500)</option>
+    <option value="6">Level 7 (1-1000)</option>
+</select>
+
+<button onclick="startGame()">START</button>
+
+<br>
+
+<input id="guessInput" type="number" placeholder="Guess number">
+
+<button onclick="checkGuess()">GUESS</button>
+
+<div id="message"></div>
+
+<div id="leaderboard">
+<h3>Leaderboard</h3>
+<div id="scores"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let levels=[10,20,50,100,200,500,1000];
+let attemptsList=[5,5,5,10,20,50,100];
+
+let secretNumber;
+let attempts;
+let maxAttempts;
+let leaderboard=[];
+
+function startGame(){
+
+let choice=document.getElementById("level").value;
+
+secretNumber=
+Math.floor(Math.random()*levels[choice])+1;
+
+attempts=1;
+maxAttempts=attemptsList[choice];
+
+document.getElementById("message").innerHTML=
+"GAME STARTED";
+}
+
+function checkGuess(){
+
+let guess=
+Number(document.getElementById("guessInput").value);
+
+if(!secretNumber){
+    return;
+}
+
+if(guess===secretNumber){
+
+document.getElementById("message").innerHTML=
+"YOU WIN IN "+attempts+" ATTEMPTS";
+
+leaderboard.push(
+"✅ WIN | Attempts: "+attempts
+);
+
+updateBoard();
+
+secretNumber=null;
+return;
+}
+
+if(attempts>=maxAttempts){
+
+document.getElementById("message").innerHTML=
+"GAME OVER | Number was "+secretNumber;
+
+leaderboard.push(
+"❌ LOST | Attempts: "+attempts
+);
+
+updateBoard();
+
+secretNumber=null;
+return;
+}
+
+if(guess<secretNumber){
+    document.getElementById("message").innerHTML=
+    "TOO LOW";
+}
+else{
+    document.getElementById("message").innerHTML=
+    "TOO HIGH";
+}
+
+attempts++;
+
+}
+
+function updateBoard(){
+
+let board=
+document.getElementById("scores");
+
+board.innerHTML="";
+
+leaderboard.forEach(x=>{
+
+let p=document.createElement("p");
+
+p.textContent=x;
+
+board.appendChild(p);
+
+});
+
+}
+
+const canvas=document.getElementById("snow");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let particles=[];
+
+for(let i=0;i<100;i++){
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+r:Math.random()*3+1,
+s:Math.random()*2+0.5
+});
+
+}
+
+function animate(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+ctx.fillStyle="white";
+
+particles.forEach(p=>{
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fill();
+
+p.y+=p.s;
+
+if(p.y>canvas.height){
+p.y=0;
+p.x=Math.random()*canvas.width;
+}
+
+});
+
+requestAnimationFrame(animate);
+
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
