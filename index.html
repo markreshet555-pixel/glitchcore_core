@@ -1,106 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ocean Number Game</title>
+<title>Guess The Number | Japan Edition</title>
 
 <style>
 
 body{
-margin:0;
-font-family:Arial,sans-serif;
-color:white;
-text-align:center;
-
-background:url("dynamic-anime-waves-stockcake.jpg");
-background-size:cover;
-background-position:center;
-background-attachment:fixed;
-
-min-height:100vh;
+    margin:0;
+    font-family:Segoe UI,sans-serif;
+    background:
+    linear-gradient(rgba(0,0,40,.55),rgba(0,0,40,.65)),
+    url("dynamic-anime-waves-stockcake.jpg");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    color:white;
 }
 
-.overlay{
-background:rgba(0,0,0,0.55);
-min-height:100vh;
-padding:30px;
+.container{
+    width:90%;
+    max-width:800px;
+    margin:auto;
+    padding-top:40px;
+}
+
+.card{
+    background:rgba(0,0,0,.45);
+    backdrop-filter:blur(8px);
+    padding:25px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,.3);
 }
 
 h1{
-font-size:50px;
-text-shadow:0 0 15px cyan;
-animation:float 3s infinite ease-in-out;
-}
-
-@keyframes float{
-50%{
-transform:translateY(-8px);
-}
-}
-
-.box{
-max-width:700px;
-margin:auto;
-padding:20px;
-
-background:rgba(0,0,0,0.6);
-border:2px solid white;
-border-radius:15px;
-
-backdrop-filter:blur(5px);
+    text-align:center;
+    font-size:3rem;
+    text-shadow:0 0 15px cyan;
 }
 
 input,select,button{
-
-padding:10px;
-margin:8px;
-font-size:18px;
-
-border:none;
-border-radius:8px;
-
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
 }
 
 button{
-cursor:pointer;
-background:white;
+    background:#7ed8ff;
+    cursor:pointer;
+    font-weight:bold;
 }
 
 button:hover{
-background:cyan;
+    background:white;
 }
 
 #message{
-margin-top:20px;
-font-size:22px;
-font-weight:bold;
+    margin-top:20px;
+    font-size:22px;
+    font-weight:bold;
 }
 
-#board{
-margin-top:20px;
-text-align:left;
+#leaderboard{
+    margin-top:25px;
 }
 
 .record{
-color:gold;
+    color:gold;
+    font-weight:bold;
+}
+
+.player{
+    padding:8px;
+    margin-top:5px;
+    background:rgba(255,255,255,.1);
+    border-radius:8px;
 }
 
 </style>
 </head>
+
 <body>
 
-<div class="overlay">
+<div class="container">
+
+<div class="card">
 
 <h1>🌊 Guess The Number 🌊</h1>
 
-<div class="box">
-
-<input id="nickname"
+<input
+id="nickname"
 placeholder="Steam Nickname">
-
-<br>
 
 <select id="level">
 
@@ -114,35 +109,31 @@ placeholder="Steam Nickname">
 
 </select>
 
-<br>
-
-<button onclick="startGame()">Start Game</button>
-
-<br>
+<button onclick="startGame()">
+Start Game
+</button>
 
 <input
 id="guess"
 type="number"
-placeholder="Enter number">
+placeholder="Enter Number">
 
-<button onclick="guessNumber()">
+<button onclick="makeGuess()">
 Guess
 </button>
 
 <div id="message"></div>
 
-<h2 class="record">
-Best Score:
-<span id="bestscore">
-No Record
-</span>
-</h2>
+<h3 class="record">
+🏆 Best Score:
+<span id="bestScore">No Record</span>
+</h3>
 
-<div id="board">
+<div id="leaderboard">
 
 <h2>Leaderboard</h2>
 
-<div id="leaderboard"></div>
+<div id="players"></div>
 
 </div>
 
@@ -152,101 +143,93 @@ No Record
 
 <script>
 
+let bestScore =
+localStorage.getItem("bestScore");
+
+let leaderboard =
+JSON.parse(localStorage.getItem("leaderboard")) || [];
+
 let levels=[10,20,50,100,200,500,1000];
-let attemptsList=[5,5,5,10,20,50,100];
+let maxAttemptsList=[5,5,5,10,20,50,100];
 
 let secretNumber;
 let attempts;
 let maxAttempts;
+let currentLevel;
 
-let leaderboard=
-JSON.parse(
-localStorage.getItem("leaderboard")
-)||[];
-
-let bestScore=
-localStorage.getItem("bestscore");
-
-showBest();
 showBoard();
 
-function showBest(){
-
-document.getElementById("bestscore")
-.innerText=
-bestScore || "No Record";
-
+if(bestScore){
+document.getElementById("bestScore").innerText =
+bestScore;
 }
 
 function startGame(){
 
-let level=
-document.getElementById("level").value;
+currentLevel =
+Number(document.getElementById("level").value);
 
-secretNumber=
+secretNumber =
 Math.floor(
-Math.random()*levels[level]
+Math.random()*levels[currentLevel]
 )+1;
 
 attempts=1;
 
-maxAttempts=
-attemptsList[level];
+maxAttempts =
+maxAttemptsList[currentLevel];
 
 document.getElementById("message")
-.innerText=
-"Game Started";
+.innerHTML=
+"Game Started!";
 
 }
 
-function guessNumber(){
+function makeGuess(){
 
 if(secretNumber===undefined){
-
-alert("Start game first!");
-
+alert("Start the game first!");
 return;
-
 }
 
-let guess=
+let guess =
 Number(
 document.getElementById("guess").value
 );
 
 if(guess===secretNumber){
 
-let name=
-document.getElementById("nickname")
-.value || "Unknown";
+let name =
+document.getElementById("nickname").value
+|| "Unknown";
 
 document.getElementById("message")
-.innerText=
-"🎉 You Win! Attempts: "
-+attempts;
+.innerHTML=
+"🎉 Victory! Attempts: "
++ attempts;
 
 if(
-!bestScore ||
-attempts<bestScore
+bestScore===null ||
+attempts < Number(bestScore)
 ){
 
 bestScore=attempts;
 
 localStorage.setItem(
-"bestscore",
+"bestScore",
 bestScore
 );
 
-showBest();
+document.getElementById("bestScore")
+.innerText=bestScore;
 
 }
 
 leaderboard.push({
-
 name:name,
+level:currentLevel+1,
 attempts:attempts,
 status:"Won"
-
 });
 
 saveBoard();
@@ -254,25 +237,24 @@ saveBoard();
 secretNumber=undefined;
 
 return;
-
 }
 
 if(attempts>=maxAttempts){
 
-let name=
-document.getElementById("nickname")
-.value || "Unknown";
+let name =
+document.getElementById("nickname").value
+|| "Unknown";
 
 document.getElementById("message")
-.innerText=
-"💀 Game Over!";
+.innerHTML=
+"💀 Game Over! Number was "
++ secretNumber;
 
 leaderboard.push({
-
 name:name,
+level:currentLevel+1,
 attempts:attempts,
 status:"Lost"
-
 });
 
 saveBoard();
@@ -280,21 +262,17 @@ saveBoard();
 secretNumber=undefined;
 
 return;
-
 }
 
 if(guess<secretNumber){
-
 document.getElementById("message")
-.innerText=
-"Too low";
-
-}else{
-
+.innerHTML=
+"⬆ Too Low!";
+}
+else{
 document.getElementById("message")
-.innerText=
-"Too high";
-
+.innerHTML=
+"⬇ Too High!";
 }
 
 attempts++;
@@ -305,9 +283,7 @@ function saveBoard(){
 
 localStorage.setItem(
 "leaderboard",
-JSON.stringify(
-leaderboard
-)
+JSON.stringify(leaderboard)
 );
 
 showBoard();
@@ -316,24 +292,26 @@ showBoard();
 
 function showBoard(){
 
-let box=
-document.getElementById(
-"leaderboard"
-);
+let players =
+document.getElementById("players");
 
-box.innerHTML="";
+players.innerHTML="";
 
 leaderboard.forEach(player=>{
 
-box.innerHTML+=`
+players.innerHTML+=`
 
-<p>
+<div class="player">
+
 👤 ${player.name}
 |
-${player.status}
+Level ${player.level}
 |
 ${player.attempts} attempts
-</p>
+|
+${player.status}
+
+</div>
 
 `;
 
