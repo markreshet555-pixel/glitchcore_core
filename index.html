@@ -1,325 +1,488 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галактическое Угадай Число — для Галины</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0a0612;
+            --bg-card: rgba(22, 14, 38, 0.75);
+            --border-glow: rgba(168, 85, 247, 0.4);
+            --primary: #c084fc;
+            --primary-hover: #d8b4fe;
+            --accent: #f43f5e;
+            --success: #34d399;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
 
-<title>Guess The Number | Japan Edition</title>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-<style>
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(126, 34, 206, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.1) 0%, transparent 40%),
+                linear-gradient(135deg, #050308 0%, #0f071e 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
 
-body{
-    margin:0;
-    font-family:Segoe UI,sans-serif;
-    background:
-    linear-gradient(rgba(0,0,40,.55),rgba(0,0,40,.65)),
-    url("dynamic-anime-waves-stockcake.jpg");
-    background-size:cover;
-    background-position:center;
-    background-attachment:fixed;
-    color:white;
-}
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.15);
+            text-align: center;
+            position: relative;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-.container{
-    width:90%;
-    max-width:800px;
-    margin:auto;
-    padding-top:40px;
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
 
-.card{
-    background:rgba(0,0,0,.45);
-    backdrop-filter:blur(8px);
-    padding:25px;
-    border-radius:20px;
-    border:1px solid rgba(255,255,255,.3);
-}
+        .header-badge {
+            display: inline-block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            background: rgba(192, 132, 252, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            margin-bottom: 15px;
+        }
 
-h1{
-    text-align:center;
-    font-size:3rem;
-    text-shadow:0 0 15px cyan;
-}
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #d8b4fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-input,select,button{
-    width:100%;
-    padding:12px;
-    margin-top:12px;
-    border:none;
-    border-radius:10px;
-    font-size:16px;
-}
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-button{
-    background:#7ed8ff;
-    cursor:pointer;
-    font-weight:bold;
-}
+        /* Экраны игры */
+        .screen {
+            display: none;
+        }
 
-button:hover{
-    background:white;
-}
+        .screen.active {
+            display: block;
+        }
 
-#message{
-    margin-top:20px;
-    font-size:22px;
-    font-weight:bold;
-}
+        /* Выбор сложности */
+        .difficulties {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-#leaderboard{
-    margin-top:25px;
-}
+        .btn-diff {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.record{
-    color:gold;
-    font-weight:bold;
-}
+        .btn-diff:hover {
+            background: rgba(192, 132, 252, 0.12);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(192, 132, 252, 0.2);
+        }
 
-.player{
-    padding:8px;
-    margin-top:5px;
-    background:rgba(255,255,255,.1);
-    border-radius:8px;
-}
+        .btn-diff span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
 
-</style>
+        /* Игровой процесс */
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-item b {
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(192, 132, 252, 0.25);
+        }
+
+        /* Убираем стрелочки у инпута */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.4);
+        }
+
+        .btn-main:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-main);
+        }
+
+        .message {
+            font-size: 16px;
+            font-weight: 500;
+            min-height: 24px;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        .message.success { color: var(--success); }
+        .message.error { color: var(--accent); }
+        .message.hint { color: var(--primary-hover); }
+
+        /* Таблица лидеров */
+        .leaderboard {
+            margin-top: 20px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .leaderboard h3 {
+            font-size: 13px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .lb-list {
+            list-style: none;
+            font-size: 13px;
+        }
+
+        .lb-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .lb-item:last-child {
+            border-bottom: none;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
-
-<div class="card">
-
-<h1>🌊 Guess The Number 🌊</h1>
-
-<input
-id="nickname"
-placeholder="Steam Nickname">
-
-<select id="level">
-
-<option value="0">Level 1 (1-10)</option>
-<option value="1">Level 2 (1-20)</option>
-<option value="2">Level 3 (1-50)</option>
-<option value="3">Level 4 (1-100)</option>
-<option value="4">Level 5 (1-200)</option>
-<option value="5">Level 6 (1-500)</option>
-<option value="6">Level 7 (1-1000)</option>
-
-</select>
-
-<button onclick="startGame()">
-Start Game
-</button>
-
-<input
-id="guess"
-type="number"
-placeholder="Enter Number">
-
-<button onclick="makeGuess()">
-Guess
-</button>
-
-<div id="message"></div>
-
-<h3 class="record">
-🏆 Best Score:
-<span id="bestScore">No Record</span>
-</h3>
-
-<div id="leaderboard">
-
-<h2>Leaderboard</h2>
-
-<div id="players"></div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-let bestScore =
-localStorage.getItem("bestScore");
-
-let leaderboard =
-JSON.parse(localStorage.getItem("leaderboard")) || [];
-
-let levels=[10,20,50,100,200,500,1000];
-let maxAttemptsList=[5,5,5,10,20,50,100];
-
-let secretNumber;
-let attempts;
-let maxAttempts;
-let currentLevel;
-
-showBoard();
-
-if(bestScore){
-document.getElementById("bestScore").innerText =
-bestScore;
-}
-
-function startGame(){
-
-currentLevel =
-Number(document.getElementById("level").value);
-
-secretNumber =
-Math.floor(
-Math.random()*levels[currentLevel]
-)+1;
-
-attempts=1;
-
-maxAttempts =
-maxAttemptsList[currentLevel];
-
-document.getElementById("message")
-.innerHTML=
-"Game Started!";
-
-}
-
-function makeGuess(){
-
-if(secretNumber===undefined){
-alert("Start the game first!");
-return;
-}
-
-let guess =
-Number(
-document.getElementById("guess").value
-);
-
-if(guess===secretNumber){
-
-let name =
-document.getElementById("nickname").value
-|| "Unknown";
-
-document.getElementById("message")
-.innerHTML=
-"🎉 Victory! Attempts: "
-+ attempts;
-
-if(
-bestScore===null ||
-attempts < Number(bestScore)
-){
-
-bestScore=attempts;
-
-localStorage.setItem(
-"bestScore",
-bestScore
-);
-
-document.getElementById("bestScore")
-.innerText=bestScore;
-
-}
-
-leaderboard.push({
-name:name,
-level:currentLevel+1,
-attempts:attempts,
-status:"Won"
-});
-
-saveBoard();
-
-secretNumber=undefined;
-
-return;
-}
-
-if(attempts>=maxAttempts){
-
-let name =
-document.getElementById("nickname").value
-|| "Unknown";
-
-document.getElementById("message")
-.innerHTML=
-"💀 Game Over! Number was "
-+ secretNumber;
-
-leaderboard.push({
-name:name,
-level:currentLevel+1,
-attempts:attempts,
-status:"Lost"
-});
-
-saveBoard();
-
-secretNumber=undefined;
-
-return;
-}
-
-if(guess<secretNumber){
-document.getElementById("message")
-.innerHTML=
-"⬆ Too Low!";
-}
-else{
-document.getElementById("message")
-.innerHTML=
-"⬇ Too High!";
-}
-
-attempts++;
-
-}
-
-function saveBoard(){
-
-localStorage.setItem(
-"leaderboard",
-JSON.stringify(leaderboard)
-);
-
-showBoard();
-
-}
-
-function showBoard(){
-
-let players =
-document.getElementById("players");
-
-players.innerHTML="";
-
-leaderboard.forEach(player=>{
-
-players.innerHTML+=`
-
-<div class="player">
-
-👤 ${player.name}
-|
-Level ${player.level}
-|
-${player.attempts} attempts
-|
-${player.status}
-
-</div>
-
-`;
-
-});
-
-}
-
-</script>
-
+    <div class="container">
+        <!-- ЭКРАН 1: Главное меню -->
+        <div id="screen-menu" class="screen active">
+            <div class="header-badge">Галактическая версия</div>
+            <h1>Угадай Число</h1>
+            <p class="subtitle">Специально для Галины ✨</p>
+            
+            <div class="difficulties">
+                <button class="btn-diff" onclick="startGame('easy')">
+                    Легкий уровень <span>1 – 50 (10 попыток)</span>
+                </button>
+                <button class="btn-diff" onclick="startGame('medium')">
+                    Нормальный уровень <span>1 – 100 (7 попыток)</span>
+                </button>
+                <button class="btn-diff" onclick="startGame('hard')">
+                    Сложный уровень <span>1 – 200 (5 попыток)</span>
+                </button>
+            </div>
+
+            <div class="leaderboard">
+                <h3>Лучшие результаты</h3>
+                <ul id="lb-items" class="lb-list">
+                    <li class="lb-item" style="color: var(--text-muted); text-align: center; display: block;">Пока нет рекордсменов</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 2: Игровой процесс -->
+        <div id="screen-game" class="screen">
+            <div class="header-badge" id="current-diff-badge">Уровень</div>
+            <h1>Раунд игры</h1>
+            <p class="subtitle" id="range-subtitle">Угадайте число в диапазоне</p>
+
+            <div class="game-stats">
+                <div class="stat-item">Попытки: <b id="attempts-left">0</b></div>
+                <div class="stat-item">Очки: <b id="score-current">0</b></div>
+            </div>
+
+            <div class="message" id="game-message">Введите число ниже 👇</div>
+
+            <div class="input-group">
+                <input type="number" id="user-input" placeholder="Твое число" autofocus autocomplete="off">
+                <button class="btn-main" onclick="checkGuess()">OK</button>
+            </div>
+
+            <button class="btn-secondary" onclick="returnToMenu()">Сдаться / В меню</button>
+        </div>
+
+        <!-- ЭКРАН 3: Победа / Поражение -->
+        <div id="screen-end" class="screen">
+            <div class="header-badge" id="end-badge">Итог игры</div>
+            <h1 id="end-title">Результат</h1>
+            <p class="subtitle" id="end-subtitle">Описание игры</p>
+
+            <div id="end-details" style="margin-bottom: 25px; font-size: 15px; color: var(--text-main);"></div>
+
+            <button class="btn-main" style="width: 100%; margin-bottom: 10px;" onclick="restartGame()">Играть снова</button>
+            <button class="btn-secondary" onclick="returnToMenu()" style="margin-top: 0;">В главное меню</button>
+        </div>
+    </div>
+
+    <script>
+        // Настройки уровней сложности
+        const difficulties = {
+            easy: { name: 'Легкий', max: 50, attempts: 10 },
+            medium: { name: 'Нормальный', max: 100, attempts: 7 },
+            hard: { name: 'Сложный', max: 200, attempts: 5 }
+        };
+
+        let currentDiffKey = 'medium';
+        let secretNumber = 0;
+        let attemptsLeft = 0;
+        let maxAttempts = 0;
+        let currentScore = 0;
+        let maxRange = 100;
+
+        // Инициализация таблицы лидеров при загрузке
+        updateLeaderboardDisplay();
+
+        function startGame(diffKey) {
+            currentDiffKey = diffKey;
+            const diff = difficulties[diffKey];
+            maxRange = diff.max;
+            maxAttempts = diff.attempts;
+            attemptsLeft = maxAttempts;
+            
+            secretNumber = Math.floor(Math.random() * maxRange) + 1;
+            currentScore = 0;
+
+            // Обновляем интерфейс
+            document.getElementById('current-diff-badge').innerText = diff.name + ' уровень';
+            document.getElementById('range-subtitle').innerText = `Диапазон от 1 до ${maxRange}`;
+            document.getElementById('attempts-left').innerText = attemptsLeft;
+            document.getElementById('score-current').innerText = currentScore;
+            
+            const msgEl = document.getElementById('game-message');
+            msgEl.innerText = 'Игра началась! Делай первый ход 🚀';
+            msgEl.className = 'message hint';
+
+            document.getElementById('user-input').value = '';
+
+            switchScreen('screen-game');
+            document.getElementById('user-input').focus();
+        }
+
+        // Обработка нажатия Enter в поле ввода
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        function checkGuess() {
+            const inputVal = document.getElementById('user-input').value;
+            const guess = parseInt(inputVal);
+            const msgEl = document.getElementById('game-message');
+
+            if (isNaN(guess) || guess < 1 || guess > maxRange) {
+                msgEl.innerText = `⚠️ Введи число от 1 до ${maxRange}!`;
+                msgEl.className = 'message error';
+                return;
+            }
+
+            attemptsLeft--;
+            document.getElementById('attempts-left').innerText = attemptsLeft;
+
+            if (guess === secretNumber) {
+                // Победа! Расчет очков: оставшиеся попытки * множитель сложности
+                const multiplier = currentDiffKey === 'easy' ? 10 : currentDiffKey === 'medium' ? 25 : 50;
+                currentScore = (attemptsLeft + 1) * multiplier;
+                document.getElementById('score-current').innerText = currentScore;
+                
+                saveScore(currentScore);
+                endGame(true);
+            } else if (attemptsLeft <= 0) {
+                // Проигрыш
+                endGame(false);
+            } else if (guess < secretNumber) {
+                msgEl.innerText = '📈 Загаданное число БОЛЬШЕ!';
+                msgEl.className = 'message hint';
+                document.getElementById('user-input').value = '';
+                document.getElementById('user-input').focus();
+            } else {
+                msgEl.innerText = '📉 Загаданное число МЕНЬШЕ!';
+                msgEl.className = 'message hint';
+                document.getElementById('user-input').value = '';
+                document.getElementById('user-input').focus();
+            }
+        }
+
+        function endGame(isWin) {
+            switchScreen('screen-end');
+            const badge = document.getElementById('end-badge');
+            const title = document.getElementById('end-title');
+            const subtitle = document.getElementById('end-subtitle');
+            const details = document.getElementById('end-details');
+
+            if (isWin) {
+                badge.innerText = 'Победа ✨';
+                title.innerText = 'Поздравляем, Галина!';
+                subtitle.innerText = 'Ты успешно отгадала космический код!';
+                details.innerHTML = `Загаданное число: <b>${secretNumber}</b><br>Заработано очков: <b>${currentScore}</b>`;
+            } else {
+                badge.innerText = 'Попытки исчерпаны';
+                title.innerText = 'Упс, не в этот раз!';
+                subtitle.innerText = 'Космический код остался неразгаданным.';
+                details.innerHTML = `Правильное число было: <b>${secretNumber}</b>`;
+            }
+        }
+
+        function restartGame() {
+            startGame(currentDiffKey);
+        }
+
+        function returnToMenu() {
+            switchScreen('screen-menu');
+            updateLeaderboardDisplay();
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Работа с локальным хранилищем (рекорды)
+        function saveScore(score) {
+            let scores = JSON.parse(localStorage.getItem('galina_number_game_scores')) || [];
+            scores.push({ score: score, diff: difficulties[currentDiffKey].name, date: new Date().toLocaleDateString() });
+            scores.sort((a, b) => b.score - a.score);
+            scores = scores.slice(0, 5); // Оставляем топ-5
+            localStorage.setItem('galina_number_game_scores', JSON.stringify(scores));
+        }
+
+        function updateLeaderboardDisplay() {
+            const lbList = document.getElementById('lb-items');
+            let scores = JSON.parse(localStorage.getItem('galina_number_game_scores')) || [];
+
+            if (scores.length === 0) {
+                lbList.innerHTML = '<li class="lb-item" style="color: var(--text-muted); text-align: center; display: block; padding: 5px;">Пока нет рекордсменов</li>';
+                return;
+            }
+
+            lbList.innerHTML = '';
+            scores.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'lb-item';
+                li.innerHTML = `<span>#${index + 1} (${item.diff})</span> <b>${item.score} очков</b>`;
+                lbList.appendChild(li);
+            });
+        }
+    </script>
 </body>
 </html>
